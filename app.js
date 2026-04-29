@@ -1,102 +1,25 @@
-import { initStore, saveDaily, loadDaily, appendRecord, renderHistory, exportData, importData, clearData, updateStats, today } from "./modules/storage.js";
-import { beep, bell, mokugyo } from "./modules/sound.js";
-import { initKowtow, getKowtowCount } from "./modules/kowtow.js";
-import { initRitual } from "./modules/ritual.js";
-import { initMeditation } from "./modules/meditation.js";
-import { initZhancha } from "./modules/zhancha.js";
-
-const $ = (id) => document.getElementById(id);
-const pages = {
-  0: "kowtowPage",
-  1: "ritualPage",
-  2: "meditationPage",
-  3: "meditationPage"
-};
-let currentStep = Number(localStorage.getItem("dojoCurrentStep") || 0);
-
-const wisdom = [
-  "先觀心，再行動。",
-  "今日少一分執著，多一分清明。",
-  "慢下來，願力才會穩。",
-  "不怕念起，只怕覺遲。",
-  "修行不在遠方，就在當下這一念。",
-  "以懺悔清業，以願力轉命。"
-];
-
-function showToast(msg){
-  $("toast").textContent = msg;
-  $("toast").classList.add("show");
-  setTimeout(()=>$("toast").classList.remove("show"), 2200);
-}
-window.showToast = showToast;
-
-function showPage(id){
-  document.querySelectorAll(".page,.nav").forEach(x=>x.classList.remove("active"));
-  $(id).classList.add("active");
-  const nav = [...document.querySelectorAll(".nav")].find(n=>n.dataset.page===id);
-  if(nav) nav.classList.add("active");
-  if(id==="historyPage") renderHistory();
-}
-window.showPage = showPage;
-
-function drawSteps(){
-  const names = ["kowtow","ritual","meditation","dedication"];
-  names.forEach((n,i)=>{
-    const el = $(`step-${n}`);
-    el.classList.toggle("active", i===currentStep);
-    el.classList.toggle("done", i<currentStep);
-  });
-  localStorage.setItem("dojoCurrentStep", String(currentStep));
-}
-
-function completeStep(){
-  if(currentStep < 3) currentStep += 1;
-  else {
-    appendRecord("complete", { message: "今日流程完成", bow: getKowtowCount() });
-    bell();
-    showToast("今日功德已成，回向圓滿 🪷");
-  }
-  drawSteps();
-  updateStats();
-}
-
-document.querySelectorAll(".nav").forEach(btn=>{
-  btn.addEventListener("click",()=>showPage(btn.dataset.page));
-});
-
-$("enterBtn").addEventListener("click",()=>{
-  bell();
-  $("enterGate").style.display = "none";
-});
-$("silentEnterBtn").addEventListener("click",()=>{
-  $("enterGate").style.display = "none";
-});
-
-$("goCurrentStep").addEventListener("click",()=>showPage(pages[currentStep]));
-$("completeCurrentStep").addEventListener("click",completeStep);
-
-$("saveDaily").addEventListener("click",()=>{
-  saveDaily();
-  updateStats();
-  showToast("今日修持已儲存");
-});
-
-$("refreshHistory").addEventListener("click",renderHistory);
-$("exportData").addEventListener("click",exportData);
-$("importData").addEventListener("change",importData);
-$("clearData").addEventListener("click",clearData);
-$("todayText").textContent = today;
-$("wisdomText").textContent = wisdom[new Date().getDate() % wisdom.length];
-
-initStore();
-initKowtow(updateStats);
-initRitual(()=>{ currentStep = Math.max(currentStep, 2); drawSteps(); updateStats(); showToast("儀軌已完成"); });
-initMeditation(()=>{ currentStep = Math.max(currentStep, 3); drawSteps(); updateStats(); });
-initZhancha();
-loadDaily();
-drawSteps();
-updateStats();
-
-if("serviceWorker" in navigator){
-  window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));
-}
+import {initStore,saveDaily,loadDaily,appendRecord,renderHistory,exportData,importData,clearData,updateStats,today,getStore} from './modules/storage.js';
+import {bell} from './modules/sound.js';
+import {initKowtow,getKowtowCount} from './modules/kowtow.js';
+import {initRitual} from './modules/ritual.js';
+import {initMeditation} from './modules/meditation.js';
+import {initZhancha} from './modules/zhancha.js';
+const $=id=>document.getElementById(id);const pages={0:'kowtowPage',1:'ritualPage',2:'meditationPage',3:'meditationPage'};let currentStep=Number(localStorage.getItem('dojoCurrentStep')||0);
+const wisdom=['先觀心，再行動。','今日少一分執著，多一分清明。','慢下來，願力才會穩。','不怕念起，只怕覺遲。','修行不在遠方，就在當下這一念。','以懺悔清業，以願力轉命。'];
+function showToast(msg){$('toast').textContent=msg;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2200)}window.showToast=showToast;
+function showPage(id){document.querySelectorAll('.page,.nav').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');let nav=[...document.querySelectorAll('.nav')].find(n=>n.dataset.page===id);if(nav)nav.classList.add('active');if(id==='historyPage')renderHistory();if(id==='statsPage')setTimeout(renderStats,50)}window.showPage=showPage;
+function drawSteps(){['kowtow','ritual','meditation','dedication'].forEach((n,i)=>{let el=$(`step-${n}`);el.classList.toggle('active',i===currentStep);el.classList.toggle('done',i<currentStep)});localStorage.setItem('dojoCurrentStep',String(currentStep))}
+function completeStep(){if(currentStep<3)currentStep+=1;else{appendRecord('complete',{message:'今日流程完成',bow:getKowtowCount()});bell();showToast('今日功德已成，回向圓滿 🪷')}drawSteps();updateStats()}
+document.querySelectorAll('.nav').forEach(btn=>btn.addEventListener('click',()=>showPage(btn.dataset.page)));
+$('enterBtn').addEventListener('click',()=>{bell();$('enterGate').style.display='none'});$('silentEnterBtn').addEventListener('click',()=>{$('enterGate').style.display='none'});
+$('goCurrentStep').addEventListener('click',()=>showPage(pages[currentStep]));$('completeCurrentStep').addEventListener('click',completeStep);
+$('saveDaily').addEventListener('click',()=>{saveDaily();updateStats();showToast('今日修持已儲存')});$('refreshHistory').addEventListener('click',renderHistory);$('exportData').addEventListener('click',exportData);$('importData').addEventListener('change',importData);$('clearData').addEventListener('click',clearData);
+$('todayText').textContent=today;$('wisdomText').textContent=wisdom[new Date().getDate()%wisdom.length];
+function dailyRecords(){let data=getStore();return Object.entries(data).filter(([k,v])=>k.startsWith('daily-')&&v.date).map(([k,v])=>v).sort((a,b)=>a.date.localeCompare(b.date))}
+function meritOf(d){return Math.round((d.dailyBow||0)/10+(d.dailyMeditation||0)*3+(d.ritualDone?20:0)+(d.morning?10:0)+(d.evening?10:0))}
+function streakCount(daily){let set=new Set(daily.filter(d=>meritOf(d)>0).map(d=>d.date));let streak=0,dt=new Date();while(true){let key=dt.toISOString().slice(0,10);if(set.has(key)){streak++;dt.setDate(dt.getDate()-1)}else break}return streak}
+function drawLineChart(canvas,labels,data){if(!canvas)return;let ctx=canvas.getContext('2d'),w=canvas.width=canvas.offsetWidth||600,h=canvas.height=canvas.offsetHeight||200,max=Math.max(...data,10),stepX=w/(data.length-1||1),gradient=ctx.createLinearGradient(0,0,0,h);gradient.addColorStop(0,'rgba(245,202,117,0.8)');gradient.addColorStop(1,'rgba(245,202,117,0)');let progress=0;function animate(){progress+=.04;if(progress>1)progress=1;ctx.clearRect(0,0,w,h);ctx.beginPath();ctx.lineWidth=2.5;ctx.strokeStyle='#f5ca75';data.forEach((v,i)=>{let x=i*stepX,y=h-((v/max)*h*.86+8)*progress;if(i===0)ctx.moveTo(x,y);else{let px=(i-1)*stepX,py=h-((data[i-1]/max)*h*.86+8)*progress,cx=(px+x)/2;ctx.quadraticCurveTo(px,py,cx,(py+y)/2)}});ctx.stroke();ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.closePath();ctx.fillStyle=gradient;ctx.fill();data.forEach((v,i)=>{let x=i*stepX,y=h-((v/max)*h*.86+8)*progress;ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle='#fff3bc';ctx.shadowColor='#f5ca75';ctx.shadowBlur=12;ctx.fill();ctx.shadowBlur=0});if(progress<1)requestAnimationFrame(animate)}animate()}
+function generateAIAnalysis(daily){if(!daily.length)return'尚無資料。';let last=daily[daily.length-1],prev=daily[daily.length-2]||{},score=meritOf(last),prevScore=meritOf(prev),analysis=[];if(score>70)analysis.push('✨ 今日修持穩定，願力與行動相應。');else if(score>30)analysis.push('🧘 修持尚可，仍有提升空間。');else analysis.push('⚠️ 今日修持偏弱，宜重新立心，先做最小定課。');if((last.dailyBow||0)<50)analysis.push('📿 叩首偏少，建議加強「放下我執」觀照。');if((last.dailyMeditation||0)<3)analysis.push('🧘 靜坐不足，心念較易散亂。');if(daily.length>=2){if(score>prevScore)analysis.push('📈 較前次紀錄精進，請持續保持。');else if(score<prevScore)analysis.push('📉 略有退轉，穩住節奏即可。')}if(last.habit){if(last.habit.includes('懶')||last.habit.includes('拖'))analysis.push('⚠️ 懈怠習氣顯現，需建立固定時間。');if(last.habit.includes('怒')||last.habit.includes('氣'))analysis.push('🔥 情緒波動較強，建議先觀呼吸。');if(last.habit.includes('淫'))analysis.push('🧿 欲念起現，重點在不隨、不續、不增長。')}let advice=[];if((last.dailyBow||0)<100)advice.push('明日目標：叩首至少 100 拜。');if((last.dailyMeditation||0)<5)advice.push('靜坐提升至 5 分鐘。');advice.push('持續觀照「放下我執」。');return `<p>${analysis.join('<br>')}</p><hr><p><strong>🎯 明日建議：</strong><br>${advice.join('<br>')}</p>`}
+function analyzeZhanchaWithAI(zhancha,daily){if(!zhancha)return'';let result=zhancha.result,last=daily[daily.length-1]||{},insight=[`🔮 最近占察：「${result.title}」`];if(result.type.includes('惡業')){if((last.dailyMeditation||0)<3)insight.push('🧘 靜坐不足，心念不穩 → 與占察相應。');if((last.dailyBow||0)<50)insight.push('📿 叩首偏少，執著未鬆 → 與占察相應。')}if(result.type.includes('善業')&&(last.dailyBow||0)>100)insight.push('📿 願力有落實，非偶然吉象。');let advice=['以懺悔心面對，不執著結果。'];if(result.title.includes('懈怠'))advice.unshift('明日固定時間修行，先建立節奏。');if(result.title.includes('欲念'))advice.unshift('專修「不隨不續」觀照。');return `<hr><p>${insight.join('<br>')}</p><p><strong>🧠 占察融合建議：</strong><br>${advice.join('<br>')}</p>`}
+function renderStats(){let data=getStore(),daily=dailyRecords(),labels=daily.map(d=>d.date.slice(5)),values=daily.map(meritOf);drawLineChart($('meritChart'),labels,values);$('streak').textContent=streakCount(daily);$('totalBow').textContent=daily.reduce((s,d)=>s+(d.dailyBow||0),0);$('totalMeditation').textContent=daily.reduce((s,d)=>s+(d.dailyMeditation||0),0);$('totalDays').textContent=daily.length;$('recent7').innerHTML=daily.slice(-7).map(d=>`<div>${d.date}｜功德 ${meritOf(d)}｜叩首 ${d.dailyBow||0}｜靜坐 ${d.dailyMeditation||0}</div>`).join('')||'尚無資料';let zhancha=Object.values(data).filter(x=>x.type==='zhancha').pop();$('aiAnalysis').innerHTML=generateAIAnalysis(daily)+analyzeZhanchaWithAI(zhancha,daily)}
+initStore();initKowtow(updateStats);initRitual(()=>{currentStep=Math.max(currentStep,2);drawSteps();updateStats();showToast('儀軌已完成')});initMeditation(()=>{currentStep=Math.max(currentStep,3);drawSteps();updateStats()});initZhancha();loadDaily();drawSteps();updateStats();if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}))}

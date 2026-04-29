@@ -1,7 +1,8 @@
 {
-  "name": "生活轉化修持系統｜最終道場版",
+  "name": "生活轉化修持系統｜完整最終版",
   "short_name": "修持道場",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#2b0f0c",
   "theme_color": "#2b0f0c",
