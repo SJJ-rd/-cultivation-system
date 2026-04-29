@@ -1,1 +1,57 @@
-const $=id=>document.getElementById(id);const steps=[['入壇｜前調心','作揖 → 跪<br><br>（調息）默念三遍五字箴言<br><br><blockquote>自心一點光明<br>與法界光明相應<br>無二無別</blockquote>'],['覺醒觀照（三遍）','<blockquote>若人欲了知<br>三世一切佛<br>應觀法界性<br>一切唯心造</blockquote>'],['發願文','感恩仙佛慈悲，給予弟子施竣傑懺悔之機，修行之法。<br><br>感恩上天垂憐，包容過往一切罪過錯，賜予改過之因緣。<br><br>弟子至心祈請上天加被，賜我覺察智慧，能觀自心，明辨善惡，遠離顛倒。'],['本願','願生生世世護持正法，永不退轉。<br><br>願此一生護持修身齊家班，道心堅定，實修實證。'],['修行願','願我精進修持，專心準備淫戒課程。<br><br>以正知正見，自淨其意。'],['弘願','願我以智慧德行，漸渡公司老闆一家，離迷入正，聞法得度。'],['懺悔文','<blockquote>往昔所造諸惡業<br>皆由無始貪嗔癡<br>從身語意之所生<br>一切我今皆懺悔</blockquote>愚夫施竣傑，六萬多年來，身口意業及所有無明，造作無邊罪孽、無邊罪業、無邊惡業、無邊罪過錯。'],['叩首修行','每一拜：身，叩首；心，默念「放下我執」。<br><br>觀想：黑氣排出，入地化光。'],['七佛滅罪真言','<blockquote>離婆離婆帝　求訶求訶帝　陀羅尼帝<br>尼訶囉帝　毗黎你帝　摩訶伽帝<br>真陵乾帝　莎婆訶</blockquote>'],['補缺真言','<blockquote>南謨喝囉怛那　哆囉夜耶<br>佉囉佉囉　俱住俱住<br>摩囉摩囉　虎囉 吽 賀賀<br>蘇怛拏 吽　潑抹拏 娑婆訶</blockquote>'],['自性誓願（三遍）','<blockquote>自性眾生誓願度<br>自性煩惱誓願斷<br>自性法門誓願學<br>自性佛道誓願成</blockquote>'],['淫戒專修','願我遠離一切邪淫之念，轉為正氣，轉為精進，轉為定力。<br><br><blockquote>這不是我<br>我在轉化它</blockquote>'],['總結','<blockquote>以懺悔清業<br>以叩首破執<br>以願力轉命<br>以回向圓滿</blockquote>']];let index=0,onComplete=()=>{};function draw(){$('ritualStepLabel').textContent=`${index+1} / ${steps.length}｜${steps[index][0]}`;$('ritualReader').innerHTML=steps[index][1]}export function initRitual(doneCb){onComplete=doneCb||(()=>{});$('prevRitual').addEventListener('click',()=>{index=Math.max(0,index-1);draw()});$('nextRitual').addEventListener('click',()=>{index=Math.min(steps.length-1,index+1);draw()});$('completeRitual').addEventListener('click',()=>{$('ritualDone').checked=true;onComplete()});draw()}
+import {beep} from './sound.js';
+
+const $=id=>document.getElementById(id);
+
+const steps=[
+['真懺悔觀照','罪從心起將心懺<br>心若滅時罪亦亡'],
+['發願文','感恩仙佛慈悲...'],
+['懺悔文','往昔所造諸惡業...']
+];
+
+let index=0;
+let auto=false;
+let timer=null;
+
+function qing(){beep(1200,0.2)}
+
+function draw(){
+ $('ritualStepLabel').textContent=index+1;
+ $('ritualReader').innerHTML=steps[index][1];
+ qing();
+}
+
+function next(){
+ index=Math.min(steps.length-1,index+1);
+ draw();
+}
+
+function prev(){
+ index=Math.max(0,index-1);
+ draw();
+}
+
+function autoPlay(){
+ if(auto)return;
+ auto=true;
+ timer=setInterval(()=>{
+  index++;
+  if(index>=steps.length){
+   clearInterval(timer);
+   auto=false;
+   return;
+  }
+  draw();
+ },2000);
+}
+
+function stop(){
+ auto=false;
+ clearInterval(timer);
+}
+
+$('nextRitual').onclick=next;
+$('prevRitual').onclick=prev;
+$('autoPlayBtn').onclick=autoPlay;
+$('stopAutoBtn').onclick=stop;
+
+draw();
